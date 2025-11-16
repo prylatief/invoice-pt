@@ -3,13 +3,15 @@ import { Layout } from './components/Layout';
 import { InvoiceForm } from './components/InvoiceForm';
 import { InvoicePreview } from './components/InvoicePreview';
 import { History } from './components/History';
+import { LoginModal } from './components/LoginModal';
 import { useInvoiceStore } from './store';
-import { FileText, History as HistoryIcon, LayoutTemplate, User, ShieldCheck } from 'lucide-react';
+import { FileText, History as HistoryIcon, LayoutTemplate, User, ShieldCheck, LogIn, LogOut } from 'lucide-react';
 
 const App: React.FC = () => {
   const [view, setView] = useState<'editor' | 'history'>('editor');
+  const [showLoginModal, setShowLoginModal] = useState(false);
 
-  const { resetInvoice, initializeAuth, user } = useInvoiceStore();
+  const { resetInvoice, initializeAuth, logout, user } = useInvoiceStore();
 
   useEffect(() => {
     initializeAuth();
@@ -29,18 +31,42 @@ const App: React.FC = () => {
             <LayoutTemplate className="text-cyan-400" size={28} />
             LatieFinvoice
           </h1>
-          <div className="flex items-center gap-2 mt-2">
-             {user ? (
-               <div className="flex items-center gap-2 text-xs text-green-400 bg-green-400/10 px-2 py-1 rounded-full">
-                 {user.isAdmin ? <ShieldCheck size={12} /> : <User size={12} />}
-                 {user.isAdmin ? 'Admin Mode' : 'User Mode'}
-               </div>
-             ) : (
-               <p className="text-xs text-slate-400">Guest Mode</p>
-             )}
+          <div className="mt-3 space-y-2">
+            {user ? (
+              <>
+                <div className="flex items-center gap-2 text-xs text-green-400 bg-green-400/10 px-2 py-1 rounded-full w-fit">
+                  {user.isAdmin ? <ShieldCheck size={12} /> : <User size={12} />}
+                  {user.isAdmin ? 'Admin Mode' : 'User Mode'}
+                </div>
+                <div className="flex items-center justify-between">
+                  <p className="text-xs text-slate-400 truncate max-w-[180px]" title={user.email || ''}>
+                    {user.email}
+                  </p>
+                  <button
+                    onClick={logout}
+                    className="flex items-center gap-1 text-xs text-red-400 hover:text-red-300 transition-colors"
+                    title="Logout"
+                  >
+                    <LogOut size={14} />
+                  </button>
+                </div>
+              </>
+            ) : (
+              <div className="flex items-center justify-between">
+                <p className="text-xs text-slate-400">Guest Mode</p>
+                <button
+                  onClick={() => setShowLoginModal(true)}
+                  className="flex items-center gap-1 px-2 py-1 text-xs text-white bg-cyan-600 hover:bg-cyan-500 rounded transition-colors"
+                  title="Login"
+                >
+                  <LogIn size={14} />
+                  <span>Login</span>
+                </button>
+              </div>
+            )}
           </div>
         </div>
-        
+
         <nav className="flex-1 p-4 space-y-2">
           <button
             onClick={() => setView('editor')}
@@ -100,6 +126,9 @@ const App: React.FC = () => {
           </Layout>
         )}
       </main>
+
+      {/* Login Modal */}
+      <LoginModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} />
     </div>
   );
 };
