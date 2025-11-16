@@ -292,6 +292,9 @@ export const useInvoiceStore = create<InvoiceState>((set, get) => ({
 
         // Reset form for new invoice - use setTimeout to ensure clean state update after alert
         setTimeout(() => {
+          // Scroll to top to show the new form
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+
           set((state) => ({
             currentInvoice: {
               ...INITIAL_INVOICE,
@@ -301,7 +304,7 @@ export const useInvoiceStore = create<InvoiceState>((set, get) => ({
             },
             isEditingExisting: false
           }));
-        }, 100);
+        }, 150);
       } else {
         // Update existing invoice: use set() with specific path
         const invoiceRef = ref(db, `${invoicePath}/${invoiceToSave.id}`);
@@ -312,6 +315,9 @@ export const useInvoiceStore = create<InvoiceState>((set, get) => ({
           alert("Invoice Saved as Copy!");
 
           setTimeout(() => {
+            // Scroll to top to show the new form
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+
             set((state) => ({
               currentInvoice: {
                 ...INITIAL_INVOICE,
@@ -321,14 +327,14 @@ export const useInvoiceStore = create<InvoiceState>((set, get) => ({
               },
               isEditingExisting: false
             }));
-          }, 100);
+          }, 150);
         } else {
           // Updated existing
           alert("Invoice Updated!");
 
           setTimeout(() => {
             set({ currentInvoice: invoiceToSave });
-          }, 100);
+          }, 150);
         }
       }
 
