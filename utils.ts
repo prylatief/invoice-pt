@@ -52,10 +52,20 @@ export const generatePDF = async (elementId: string, fileName: string) => {
     return;
   }
 
+  // Hide all elements with 'no-print' class before capturing
+  const noPrintElements = document.querySelectorAll('.no-print');
+  const originalDisplays: string[] = [];
+
   try {
+    noPrintElements.forEach((el, index) => {
+      const htmlEl = el as HTMLElement;
+      originalDisplays[index] = htmlEl.style.display;
+      htmlEl.style.display = 'none';
+    });
+
     // Use a reasonable scale for good quality without exploding memory
     const canvas = await html2canvas(element, {
-      scale: 2, 
+      scale: 2,
       useCORS: true,
       logging: false,
       backgroundColor: '#ffffff'
@@ -68,7 +78,7 @@ export const generatePDF = async (elementId: string, fileName: string) => {
     }
 
     const imgData = canvas.toDataURL('image/jpeg', 0.95);
-    
+
     // Initialize jsPDF with proper configuration
     const pdf = new jsPDF({
       orientation: 'portrait',
@@ -79,7 +89,7 @@ export const generatePDF = async (elementId: string, fileName: string) => {
     const imgWidth = 210; // A4 width in mm
     const pageHeight = 297; // A4 height in mm
     const imgHeight = (canvas.height * imgWidth) / canvas.width;
-    
+
     let heightLeft = imgHeight;
     let position = 0;
 
@@ -101,6 +111,12 @@ export const generatePDF = async (elementId: string, fileName: string) => {
   } catch (err) {
     console.error("PDF Generation Error:", err);
     alert("Failed to generate PDF. Please check console for details.");
+  } finally {
+    // Always restore visibility of hidden elements, even if there was an error
+    noPrintElements.forEach((el, index) => {
+      const htmlEl = el as HTMLElement;
+      htmlEl.style.display = originalDisplays[index];
+    });
   }
 };
 
