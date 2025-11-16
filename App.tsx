@@ -11,7 +11,7 @@ const App: React.FC = () => {
   const [view, setView] = useState<'editor' | 'history'>('editor');
   const [showLoginModal, setShowLoginModal] = useState(false);
 
-  const { resetInvoice, initializeAuth, logout, user } = useInvoiceStore();
+  const { resetInvoice, initializeAuth, logout, user, currentInvoice } = useInvoiceStore();
 
   useEffect(() => {
     initializeAuth();
@@ -110,13 +110,13 @@ const App: React.FC = () => {
             <div className="flex flex-col lg:flex-row gap-6 h-full">
               {/* Left: Form Editor */}
               <div className="flex-1 lg:max-w-xl xl:max-w-2xl h-full overflow-y-auto no-scrollbar pr-2 pb-20">
-                <InvoiceForm />
+                <InvoiceForm key={currentInvoice.id} />
               </div>
-              
+
               {/* Right: Preview */}
               <div className="hidden lg:flex flex-1 bg-gradient-to-br from-gray-200/80 via-gray-100/60 to-cyan-100/40 rounded-2xl border border-gray-300/50 items-start justify-center overflow-auto h-full p-8 shadow-xl backdrop-blur-sm">
                 {/* InvoicePreview renders the A4 sheet */}
-                <InvoicePreview id="desktop-preview" />
+                <InvoicePreview key={currentInvoice.id} id="desktop-preview" />
               </div>
             </div>
           </Layout>
