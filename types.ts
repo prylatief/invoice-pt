@@ -27,6 +27,7 @@ export interface InvoiceSettings {
   brandColor: string;
   locale: string;
   signatureText: string;
+  useStatus: boolean; // Toggle to enable/disable status field
 }
 
 export interface Invoice {

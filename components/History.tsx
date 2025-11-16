@@ -73,7 +73,6 @@ export const History: React.FC<Props> = ({ onViewInvoice }) => {
                                 <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
                                 <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wider">Client</th>
                                 <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
-                                <th className="text-center py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                                 <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wider rounded-r-lg">Actions</th>
                             </tr>
                         </thead>
@@ -82,28 +81,32 @@ export const History: React.FC<Props> = ({ onViewInvoice }) => {
                                 const total = inv.items.reduce((acc, item) => acc + (item.price * item.quantity), 0) * (1 + inv.settings.taxRate/100);
                                 return (
                                     <tr key={inv.id} className="hover:bg-gray-50 transition-colors group">
-                                        <td className="py-3 px-4 font-mono font-medium text-blue-600">{inv.invoiceNumber}</td>
+                                        <td className="py-3 px-4">
+                                            <div className="flex items-center gap-2">
+                                                <span className="font-mono font-medium text-blue-600">{inv.invoiceNumber}</span>
+                                                {inv.settings.useStatus && (
+                                                    <span className={`px-2 py-0.5 rounded text-xs font-bold uppercase
+                                                        ${inv.status === 'PAID' ? 'bg-green-100 text-green-700' :
+                                                          inv.status === 'UNPAID' ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-600'}`}
+                                                    >
+                                                        {inv.status}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </td>
                                         <td className="py-3 px-4 text-gray-600">{inv.date}</td>
                                         <td className="py-3 px-4 text-gray-800 font-medium">{inv.receiver.name}</td>
                                         <td className="py-3 px-4 text-right font-medium text-gray-800">{formatCurrency(total, inv.settings.currency)}</td>
-                                        <td className="py-3 px-4 text-center">
-                                            <span className={`px-2 py-1 rounded text-xs font-bold uppercase
-                                                ${inv.status === 'PAID' ? 'bg-green-100 text-green-700' : 
-                                                  inv.status === 'UNPAID' ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-600'}`}
-                                            >
-                                                {inv.status}
-                                            </span>
-                                        </td>
                                         <td className="py-3 px-4 text-right">
                                             <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <button 
+                                                <button
                                                     onClick={() => handleView(inv.id)}
                                                     className="p-2 hover:bg-blue-50 text-blue-600 rounded-lg transition-colors"
                                                     title="View / Edit"
                                                 >
                                                     <Eye size={18} />
                                                 </button>
-                                                <button 
+                                                <button
                                                     onClick={() => deleteInvoice(inv.id)}
                                                     className="p-2 hover:bg-red-50 text-red-500 rounded-lg transition-colors"
                                                     title="Delete"
