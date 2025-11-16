@@ -120,12 +120,11 @@ export const InvoicePreview: React.FC<Props> = ({ id }) => {
                 </div>
 
                 {/* Bill To */}
-                <div className="mb-4 p-4 bg-gradient-to-br from-gray-50 to-gray-100/50 rounded-2xl border-2 border-gray-200/60 shadow-sm break-inside-avoid relative overflow-hidden">
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-cyan-100/40 to-blue-100/40 rounded-full blur-3xl"></div>
-                    <span className="text-xs font-bold text-cyan-600 uppercase tracking-wider mb-2 block relative z-10">Bill To</span>
-                    <h2 className="text-xl font-bold text-gray-900 mb-1 relative z-10">{receiver.name || "Client Name"}</h2>
-                    <p className="text-gray-600 whitespace-pre-wrap leading-snug relative z-10">{receiver.address || "Client Address"}</p>
-                    <p className="text-gray-600 mt-1 relative z-10">{receiver.email}</p>
+                <div className="mb-4 p-4 bg-gradient-to-br from-gray-50 to-gray-100/50 rounded-2xl border-2 border-gray-200/60 shadow-sm break-inside-avoid">
+                    <span className="text-xs font-bold text-cyan-600 uppercase tracking-wider mb-2 block">Bill To</span>
+                    <h2 className="text-xl font-bold text-gray-900 mb-1">{receiver.name || "Client Name"}</h2>
+                    <p className="text-gray-600 whitespace-pre-wrap leading-snug">{receiver.address || "Client Address"}</p>
+                    <p className="text-gray-600 mt-1">{receiver.email}</p>
                 </div>
 
                 {/* Table */}
