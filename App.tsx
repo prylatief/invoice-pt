@@ -29,10 +29,12 @@ const App: React.FC = () => {
       {/* Sidebar / Navigation */}
       <aside className="w-full md:w-64 bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 text-white flex flex-col shrink-0 shadow-2xl">
         <div className="p-6 border-b border-cyan-500/20 bg-gradient-to-r from-cyan-500/10 to-transparent">
-          <h1 className="text-2xl font-bold flex items-center gap-2 bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
+          <div className="flex items-center gap-2">
             <LayoutTemplate className="text-cyan-400" size={28} />
-            LatieFinvoice
-          </h1>
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
+              LatieFinvoice
+            </h1>
+          </div>
           <div className="flex items-center gap-2 mt-2">
              {user ? (
                <div className="flex items-center gap-2 text-xs text-green-400 bg-green-400/10 px-2 py-1 rounded-full">

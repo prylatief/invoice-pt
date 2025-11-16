@@ -49,10 +49,12 @@ export const InvoiceForm: React.FC = () => {
     <div className="space-y-6 pb-10">
       {/* Header & Settings */}
       <div className="bg-white p-6 rounded-2xl shadow-md border border-gray-200/60 hover:shadow-lg transition-shadow">
-        <h2 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+        <div className="flex items-center gap-2 mb-4">
           <Palette size={20} className="text-cyan-600" />
-          <span className="bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent">Branding & Settings</span>
-        </h2>
+          <h2 className="text-lg font-bold bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent">
+            Branding & Settings
+          </h2>
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-600 mb-1">Logo</label>
@@ -106,7 +108,7 @@ export const InvoiceForm: React.FC = () => {
       {/* Invoice Details */}
       <div className="bg-white p-6 rounded-2xl shadow-md border border-gray-200/60 hover:shadow-lg transition-shadow">
         <div className="flex justify-between items-center mb-4">
-             <h2 className="text-lg font-bold text-gray-800 bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent">Invoice Details</h2>
+             <h2 className="text-lg font-bold bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent">Invoice Details</h2>
              <button
                 onClick={saveInvoice}
                 className="flex items-center gap-2 px-5 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl text-sm font-semibold hover:from-green-600 hover:to-emerald-700 transition-all shadow-md hover:shadow-lg"
@@ -161,7 +163,7 @@ export const InvoiceForm: React.FC = () => {
       {/* Company & Client */}
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
         <div className="bg-white p-6 rounded-2xl shadow-md border border-gray-200/60 hover:shadow-lg transition-shadow">
-          <h2 className="text-lg font-bold text-gray-800 mb-4 bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent">From (Sender)</h2>
+          <h2 className="text-lg font-bold mb-4 bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent">From (Sender)</h2>
           <div className="space-y-3">
             <input
               placeholder="Company Name"
@@ -197,7 +199,7 @@ export const InvoiceForm: React.FC = () => {
         </div>
 
         <div className="bg-white p-6 rounded-2xl shadow-md border border-gray-200/60 hover:shadow-lg transition-shadow">
-          <h2 className="text-lg font-bold text-gray-800 mb-4 bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent">To (Client)</h2>
+          <h2 className="text-lg font-bold mb-4 bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent">To (Client)</h2>
           <div className="space-y-3">
             <input
               placeholder="Client Name"
@@ -224,7 +226,7 @@ export const InvoiceForm: React.FC = () => {
       {/* Items */}
       <div className="bg-white p-6 rounded-2xl shadow-md border border-gray-200/60 hover:shadow-lg transition-shadow">
         <div className="flex justify-between items-center mb-4 flex-wrap gap-2">
-          <h2 className="text-lg font-bold text-gray-800 bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent">Items</h2>
+          <h2 className="text-lg font-bold bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent">Items</h2>
           <div className="flex gap-2">
              <input
                 type="file"
@@ -299,7 +301,7 @@ export const InvoiceForm: React.FC = () => {
       </div>
       
       <div className="bg-white p-6 rounded-2xl shadow-md border border-gray-200/60 hover:shadow-lg transition-shadow">
-         <h2 className="text-lg font-bold text-gray-800 mb-2 bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent">Notes & Signature</h2>
+         <h2 className="text-lg font-bold mb-2 bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent">Notes & Signature</h2>
          <div className="space-y-4">
             <textarea
                value={currentInvoice.notes}
