@@ -3,15 +3,13 @@ import { Layout } from './components/Layout';
 import { InvoiceForm } from './components/InvoiceForm';
 import { InvoicePreview } from './components/InvoicePreview';
 import { History } from './components/History';
-import { LoginModal } from './components/LoginModal';
 import { useInvoiceStore } from './store';
-import { FileText, History as HistoryIcon, LayoutTemplate, LogIn, LogOut, User, ShieldCheck } from 'lucide-react';
+import { FileText, History as HistoryIcon, LayoutTemplate, User, ShieldCheck } from 'lucide-react';
 
 const App: React.FC = () => {
   const [view, setView] = useState<'editor' | 'history'>('editor');
-  const [isLoginOpen, setIsLoginOpen] = useState(false);
-  
-  const { resetInvoice, initializeAuth, user, logout } = useInvoiceStore();
+
+  const { resetInvoice, initializeAuth, user } = useInvoiceStore();
 
   useEffect(() => {
     initializeAuth();
@@ -24,8 +22,6 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row">
-      <LoginModal isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} />
-
       {/* Sidebar / Navigation */}
       <aside className="w-full md:w-64 bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 text-white flex flex-col shrink-0 shadow-2xl">
         <div className="p-6 border-b border-cyan-500/20 bg-gradient-to-r from-cyan-500/10 to-transparent">
@@ -78,25 +74,6 @@ const App: React.FC = () => {
           >
             + Create New Invoice
           </button>
-
-          {user ? (
-            <div className="pt-2 border-t border-white/5">
-              <div className="px-2 mb-2 text-xs text-slate-500 truncate">{user.email}</div>
-              <button
-                onClick={logout}
-                className="w-full flex items-center gap-2 px-4 py-2 text-red-400 hover:bg-red-900/20 rounded-lg text-sm transition-colors"
-              >
-                <LogOut size={16} /> Logout
-              </button>
-            </div>
-          ) : (
-             <button
-                onClick={() => setIsLoginOpen(true)}
-                className="w-full flex items-center gap-2 justify-center px-4 py-2 bg-cyan-900/30 text-cyan-300 hover:bg-cyan-900/50 hover:text-cyan-200 rounded-lg text-sm transition-all border border-cyan-700/50 font-medium"
-              >
-                <LogIn size={16} /> Login to Save
-              </button>
-          )}
         </div>
       </aside>
 
