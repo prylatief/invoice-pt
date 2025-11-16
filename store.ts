@@ -169,12 +169,18 @@ export const useInvoiceStore = create<InvoiceState>((set, get) => ({
     }
 
     await signOut(auth);
-    set({
+    set((state) => ({
       user: null,
       history: [],
-      _unsubscribeSnapshot: null
-    });
-    get().resetInvoice();
+      _unsubscribeSnapshot: null,
+      currentInvoice: {
+        ...INITIAL_INVOICE,
+        id: uuidv4(),
+        userId: '',
+        invoiceNumber: `INV-${new Date().getFullYear()}-${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`
+      },
+      isEditingExisting: false
+    }));
   },
 
   // --- Invoice Editing Actions ---
@@ -283,7 +289,15 @@ export const useInvoiceStore = create<InvoiceState>((set, get) => ({
         await set(newInvoiceRef, invoiceToSave);
 
         // Reset form for new invoice
-        get().resetInvoice();
+        set((state) => ({
+          currentInvoice: {
+            ...INITIAL_INVOICE,
+            id: uuidv4(),
+            userId: state.user?.uid || '',
+            invoiceNumber: `INV-${new Date().getFullYear()}-${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`
+          },
+          isEditingExisting: false
+        }));
         alert("Invoice Saved to Cloud! Ready to create a new invoice.");
       } else {
         // Update existing invoice: use set() with specific path
@@ -292,7 +306,15 @@ export const useInvoiceStore = create<InvoiceState>((set, get) => ({
 
         if (forceNew) {
           // Saved as copy
-          get().resetInvoice();
+          set((state) => ({
+            currentInvoice: {
+              ...INITIAL_INVOICE,
+              id: uuidv4(),
+              userId: state.user?.uid || '',
+              invoiceNumber: `INV-${new Date().getFullYear()}-${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`
+            },
+            isEditingExisting: false
+          }));
           alert("Invoice Saved as Copy!");
         } else {
           // Updated existing
