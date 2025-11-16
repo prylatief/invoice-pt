@@ -108,14 +108,16 @@ export const InvoicePreview: React.FC<Props> = ({ id }) => {
                         </div>
 
                         {/* Status Badge */}
-                        <div className="mt-4 inline-block px-6 py-1.5 border-2 text-sm font-bold uppercase tracking-widest rounded-md"
-                            style={{
-                                borderColor: status === 'PAID' ? '#22c55e' : status === 'UNPAID' ? '#ef4444' : '#9ca3af',
-                                color: status === 'PAID' ? '#22c55e' : status === 'UNPAID' ? '#ef4444' : '#9ca3af'
-                            }}
-                        >
-                            {status}
-                        </div>
+                        {settings.useStatus && (
+                            <div className="mt-4 inline-block px-6 py-1.5 border-2 text-sm font-bold uppercase tracking-widest rounded-md"
+                                style={{
+                                    borderColor: status === 'PAID' ? '#22c55e' : status === 'UNPAID' ? '#ef4444' : '#9ca3af',
+                                    color: status === 'PAID' ? '#22c55e' : status === 'UNPAID' ? '#ef4444' : '#9ca3af'
+                                }}
+                            >
+                                {status}
+                            </div>
+                        )}
                     </div>
                 </div>
 

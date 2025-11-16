@@ -80,9 +80,14 @@ export const useInvoiceStore = create<InvoiceState>((set, get) => ({
         onSnapshot(q, (snapshot) => {
           const loadedInvoices: Invoice[] = [];
           snapshot.forEach((doc) => {
-            loadedInvoices.push(doc.data() as Invoice);
+            const invoice = doc.data() as Invoice;
+            // Backwards compatibility: Add useStatus if missing
+            if (invoice.settings.useStatus === undefined) {
+              invoice.settings.useStatus = true;
+            }
+            loadedInvoices.push(invoice);
           });
-          
+
           // Sort manually if composite index is missing for 'where' + 'orderBy'
           if (!isAdmin) {
              loadedInvoices.sort((a, b) => b.createdAt - a.createdAt);

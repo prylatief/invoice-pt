@@ -90,7 +90,7 @@ export const InvoiceForm: React.FC = () => {
           </div>
           <div>
              <label className="block text-sm font-medium text-gray-600 mb-1">Currency</label>
-             <select 
+             <select
                 value={currentInvoice.settings.currency}
                 onChange={(e) => updateSettings({ currency: e.target.value })}
                 className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
@@ -99,6 +99,18 @@ export const InvoiceForm: React.FC = () => {
                 <option value="USD">USD ($)</option>
                 <option value="EUR">EUR (€)</option>
              </select>
+          </div>
+          <div>
+             <label className="block text-sm font-medium text-gray-600 mb-1">Use Status Field</label>
+             <div className="flex items-center gap-3 mt-2">
+                <input
+                  type="checkbox"
+                  checked={currentInvoice.settings.useStatus}
+                  onChange={(e) => updateSettings({ useStatus: e.target.checked })}
+                  className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500 cursor-pointer"
+                />
+                <span className="text-sm text-gray-600">Enable paid/unpaid status</span>
+             </div>
           </div>
         </div>
       </div>
@@ -143,18 +155,20 @@ export const InvoiceForm: React.FC = () => {
               className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
             />
           </div>
-          <div>
-             <label className="block text-sm font-medium text-gray-600 mb-1">Status</label>
-             <select 
+          {currentInvoice.settings.useStatus && (
+            <div>
+              <label className="block text-sm font-medium text-gray-600 mb-1">Status</label>
+              <select
                 value={currentInvoice.status}
                 onChange={(e) => updateInvoiceDetails({ status: e.target.value as any })}
                 className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-             >
+              >
                 <option value="DRAFT">Draft</option>
                 <option value="UNPAID">Unpaid</option>
                 <option value="PAID">Paid</option>
-             </select>
-          </div>
+              </select>
+            </div>
+          )}
         </div>
       </div>
 

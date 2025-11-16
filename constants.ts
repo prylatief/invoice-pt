@@ -41,7 +41,8 @@ export const INITIAL_INVOICE: Invoice = {
     taxRate: 11,
     brandColor: DEFAULT_BRAND_COLOR,
     locale: "id-ID",
-    signatureText: "Authorized Signature"
+    signatureText: "Authorized Signature",
+    useStatus: true
   },
   createdAt: Date.now()
 };
