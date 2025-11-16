@@ -18,7 +18,11 @@ Backend server for Invoice PT application using Firebase Admin SDK.
 5. Click **Generate New Private Key**
 6. Save the downloaded JSON file as `serviceAccountKey.json` in the `server/` directory
 
-**⚠️ IMPORTANT**: Never commit `serviceAccountKey.json` to version control. It's already added to `.gitignore`.
+**⚠️ CRITICAL SECURITY WARNING**:
+- **NEVER commit `serviceAccountKey.json` to version control** - it contains sensitive credentials with admin access
+- The file is already in `.gitignore` to prevent accidental commits
+- See [SECURITY.md](../SECURITY.md) for complete security guidelines
+- Use `serviceAccountKey.example.json` as a template (it contains no real credentials)
 
 ### 2. Install Dependencies
 
