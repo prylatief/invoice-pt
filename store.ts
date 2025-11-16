@@ -20,7 +20,11 @@ interface InvoiceState {
   currentInvoice: Invoice;
   history: Invoice[];
   isLoadingHistory: boolean;
-  
+
+  // Internal: Listener cleanup functions
+  _unsubscribeAuth: (() => void) | null;
+  _unsubscribeSnapshot: (() => void) | null;
+
   // Actions
   initializeAuth: () => void;
   logout: () => void;
@@ -29,12 +33,12 @@ interface InvoiceState {
   updateReceiver: (data: Partial<Invoice['receiver']>) => void;
   updateSettings: (data: Partial<Invoice['settings']>) => void;
   updateInvoiceDetails: (data: Partial<Pick<Invoice, 'invoiceNumber' | 'date' | 'dueDate' | 'status' | 'notes'>>) => void;
-  
+
   addItem: (item?: Partial<InvoiceItem>) => void;
   updateItem: (id: string, data: Partial<InvoiceItem>) => void;
   removeItem: (id: string) => void;
   setItems: (items: InvoiceItem[]) => void;
-  
+
   saveInvoice: () => Promise<void>;
   loadInvoice: (id: string) => void;
   deleteInvoice: (id: string) => Promise<void>;
@@ -46,10 +50,24 @@ export const useInvoiceStore = create<InvoiceState>((set, get) => ({
   currentInvoice: { ...INITIAL_INVOICE, id: uuidv4(), userId: '' },
   history: [],
   isLoadingHistory: false,
+  _unsubscribeAuth: null,
+  _unsubscribeSnapshot: null,
 
   // --- Auth & Realtime Listeners ---
   initializeAuth: () => {
-    onAuthStateChanged(auth, (firebaseUser) => {
+    // Clean up existing listeners before creating new ones
+    const { _unsubscribeAuth, _unsubscribeSnapshot } = get();
+    if (_unsubscribeAuth) {
+      _unsubscribeAuth();
+      set({ _unsubscribeAuth: null });
+    }
+    if (_unsubscribeSnapshot) {
+      _unsubscribeSnapshot();
+      set({ _unsubscribeSnapshot: null });
+    }
+
+    // Create auth state listener and store unsubscribe function
+    const unsubAuth = onAuthStateChanged(auth, (firebaseUser) => {
       if (firebaseUser) {
         // Simple Admin Logic: If email contains 'admin', treat as admin
         const isAdmin = firebaseUser.email?.includes('admin') || false;
@@ -77,7 +95,8 @@ export const useInvoiceStore = create<InvoiceState>((set, get) => ({
           );
         }
 
-        onSnapshot(q, (snapshot) => {
+        // Create Firestore listener and store unsubscribe function
+        const unsubSnapshot = onSnapshot(q, (snapshot) => {
           const loadedInvoices: Invoice[] = [];
           snapshot.forEach((doc) => {
             const invoice = doc.data() as Invoice;
@@ -94,7 +113,13 @@ export const useInvoiceStore = create<InvoiceState>((set, get) => ({
           }
 
           set({ history: loadedInvoices, isLoadingHistory: false });
+        }, (error) => {
+          console.error('Error listening to invoices:', error);
+          set({ isLoadingHistory: false });
         });
+
+        // Store the unsubscribe function
+        set({ _unsubscribeSnapshot: unsubSnapshot });
 
       } else {
         // Guest Mode: Load invoices from localStorage
@@ -121,11 +146,24 @@ export const useInvoiceStore = create<InvoiceState>((set, get) => ({
         set({ user: null, isLoadingHistory: false });
       }
     });
+
+    // Store the auth listener unsubscribe function
+    set({ _unsubscribeAuth: unsubAuth });
   },
 
   logout: async () => {
+    // Clean up listeners before logging out
+    const { _unsubscribeSnapshot } = get();
+    if (_unsubscribeSnapshot) {
+      _unsubscribeSnapshot();
+    }
+
     await signOut(auth);
-    set({ user: null, history: [] });
+    set({
+      user: null,
+      history: [],
+      _unsubscribeSnapshot: null
+    });
     get().resetInvoice();
   },
 
@@ -192,9 +230,10 @@ export const useInvoiceStore = create<InvoiceState>((set, get) => ({
     const { currentInvoice, user, history } = get();
 
     try {
+      // Ensure userId is always set correctly for authenticated users
       const invoiceToSave = {
         ...currentInvoice,
-        userId: currentInvoice.userId || user?.uid || 'guest',
+        userId: user?.uid || currentInvoice.userId || 'guest',
         createdAt: currentInvoice.createdAt || Date.now()
       };
 
