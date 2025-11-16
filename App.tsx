@@ -27,11 +27,11 @@ const App: React.FC = () => {
       <LoginModal isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} />
 
       {/* Sidebar / Navigation */}
-      <aside className="w-full md:w-64 bg-slate-900 text-white flex flex-col shrink-0">
-        <div className="p-6 border-b border-slate-800">
-          <h1 className="text-xl font-bold flex items-center gap-2">
-            <LayoutTemplate className="text-blue-400" />
-            AutoInvoice
+      <aside className="w-full md:w-64 bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 text-white flex flex-col shrink-0 shadow-2xl">
+        <div className="p-6 border-b border-cyan-500/20 bg-gradient-to-r from-cyan-500/10 to-transparent">
+          <h1 className="text-2xl font-bold flex items-center gap-2 bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
+            <LayoutTemplate className="text-cyan-400" size={28} />
+            LatieFinvoice
           </h1>
           <div className="flex items-center gap-2 mt-2">
              {user ? (
@@ -48,35 +48,35 @@ const App: React.FC = () => {
         <nav className="flex-1 p-4 space-y-2">
           <button
             onClick={() => setView('editor')}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-              view === 'editor' 
-                ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/50' 
-                : 'text-slate-300 hover:bg-slate-800'
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
+              view === 'editor'
+                ? 'bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-lg shadow-cyan-900/50 scale-105'
+                : 'text-slate-300 hover:bg-slate-800/60 hover:text-cyan-300'
             }`}
           >
             <FileText size={20} />
-            <span>Current Invoice</span>
+            <span className="font-medium">Current Invoice</span>
           </button>
-          
+
           <button
             onClick={() => setView('history')}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-              view === 'history' 
-                ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/50' 
-                : 'text-slate-300 hover:bg-slate-800'
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
+              view === 'history'
+                ? 'bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-lg shadow-cyan-900/50 scale-105'
+                : 'text-slate-300 hover:bg-slate-800/60 hover:text-cyan-300'
             }`}
           >
             <HistoryIcon size={20} />
-            <span>History</span>
+            <span className="font-medium">History</span>
           </button>
         </nav>
 
-        <div className="p-4 border-t border-slate-800 space-y-3">
+        <div className="p-4 border-t border-cyan-500/20 space-y-3">
           <button
             onClick={handleNewInvoice}
-            className="w-full bg-white/10 hover:bg-white/20 text-white py-2 rounded-lg text-sm font-medium transition-all border border-white/10"
+            className="w-full bg-gradient-to-r from-cyan-500/20 to-blue-500/20 hover:from-cyan-500/30 hover:to-blue-500/30 text-cyan-200 py-2.5 rounded-lg text-sm font-semibold transition-all border border-cyan-400/30 shadow-lg shadow-cyan-900/20"
           >
-            + Create New
+            + Create New Invoice
           </button>
 
           {user ? (
@@ -92,7 +92,7 @@ const App: React.FC = () => {
           ) : (
              <button
                 onClick={() => setIsLoginOpen(true)}
-                className="w-full flex items-center gap-2 px-4 py-2 bg-blue-900/30 text-blue-300 hover:bg-blue-900/50 hover:text-blue-200 rounded-lg text-sm transition-colors border border-blue-800/50"
+                className="w-full flex items-center gap-2 justify-center px-4 py-2 bg-cyan-900/30 text-cyan-300 hover:bg-cyan-900/50 hover:text-cyan-200 rounded-lg text-sm transition-all border border-cyan-700/50 font-medium"
               >
                 <LogIn size={16} /> Login to Save
               </button>
@@ -101,7 +101,7 @@ const App: React.FC = () => {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 h-screen overflow-hidden bg-gray-100">
+      <main className="flex-1 h-screen overflow-hidden bg-gradient-to-br from-gray-100 via-gray-50 to-cyan-50/30">
         {view === 'editor' ? (
           <Layout>
             <div className="flex flex-col lg:flex-row gap-6 h-full">
@@ -111,7 +111,7 @@ const App: React.FC = () => {
               </div>
               
               {/* Right: Preview */}
-              <div className="hidden lg:flex flex-1 bg-gray-200/60 rounded-xl border border-gray-300/50 items-start justify-center overflow-auto h-full p-8 shadow-inner">
+              <div className="hidden lg:flex flex-1 bg-gradient-to-br from-gray-200/80 via-gray-100/60 to-cyan-100/40 rounded-2xl border border-gray-300/50 items-start justify-center overflow-auto h-full p-8 shadow-xl backdrop-blur-sm">
                 {/* InvoicePreview renders the A4 sheet */}
                 <InvoicePreview id="desktop-preview" />
               </div>

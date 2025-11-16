@@ -48,10 +48,10 @@ export const InvoiceForm: React.FC = () => {
   return (
     <div className="space-y-6 pb-10">
       {/* Header & Settings */}
-      <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-        <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-          <Palette size={18} />
-          Branding & Settings
+      <div className="bg-white p-6 rounded-2xl shadow-md border border-gray-200/60 hover:shadow-lg transition-shadow">
+        <h2 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+          <Palette size={20} className="text-cyan-600" />
+          <span className="bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent">Branding & Settings</span>
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
@@ -60,7 +60,7 @@ export const InvoiceForm: React.FC = () => {
               {currentInvoice.sender.logo && (
                 <img src={currentInvoice.sender.logo} alt="Logo" className="h-12 w-12 object-contain rounded border" />
               )}
-              <label className="cursor-pointer flex items-center gap-2 px-4 py-2 bg-gray-50 hover:bg-gray-100 border rounded-lg text-sm text-gray-700 transition-colors">
+              <label className="cursor-pointer flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-cyan-50 to-blue-50 hover:from-cyan-100 hover:to-blue-100 border border-cyan-200 rounded-lg text-sm text-cyan-700 font-medium transition-all">
                 <Upload size={16} />
                 Upload Logo
                 <input type="file" className="hidden" accept="image/*" onChange={handleLogoUpload} />
@@ -104,12 +104,12 @@ export const InvoiceForm: React.FC = () => {
       </div>
 
       {/* Invoice Details */}
-      <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+      <div className="bg-white p-6 rounded-2xl shadow-md border border-gray-200/60 hover:shadow-lg transition-shadow">
         <div className="flex justify-between items-center mb-4">
-             <h2 className="text-lg font-semibold text-gray-800">Invoice Details</h2>
-             <button 
+             <h2 className="text-lg font-bold text-gray-800 bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent">Invoice Details</h2>
+             <button
                 onClick={saveInvoice}
-                className="flex items-center gap-2 px-4 py-1.5 bg-green-600 text-white rounded-md text-sm font-medium hover:bg-green-700 transition"
+                className="flex items-center gap-2 px-5 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl text-sm font-semibold hover:from-green-600 hover:to-emerald-700 transition-all shadow-md hover:shadow-lg"
              >
                 <Save size={16} /> Save
              </button>
@@ -160,8 +160,8 @@ export const InvoiceForm: React.FC = () => {
 
       {/* Company & Client */}
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">From (Sender)</h2>
+        <div className="bg-white p-6 rounded-2xl shadow-md border border-gray-200/60 hover:shadow-lg transition-shadow">
+          <h2 className="text-lg font-bold text-gray-800 mb-4 bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent">From (Sender)</h2>
           <div className="space-y-3">
             <input
               placeholder="Company Name"
@@ -196,8 +196,8 @@ export const InvoiceForm: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">To (Client)</h2>
+        <div className="bg-white p-6 rounded-2xl shadow-md border border-gray-200/60 hover:shadow-lg transition-shadow">
+          <h2 className="text-lg font-bold text-gray-800 mb-4 bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent">To (Client)</h2>
           <div className="space-y-3">
             <input
               placeholder="Client Name"
@@ -222,9 +222,9 @@ export const InvoiceForm: React.FC = () => {
       </div>
 
       {/* Items */}
-      <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+      <div className="bg-white p-6 rounded-2xl shadow-md border border-gray-200/60 hover:shadow-lg transition-shadow">
         <div className="flex justify-between items-center mb-4 flex-wrap gap-2">
-          <h2 className="text-lg font-semibold text-gray-800">Items</h2>
+          <h2 className="text-lg font-bold text-gray-800 bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent">Items</h2>
           <div className="flex gap-2">
              <input
                 type="file"
@@ -236,14 +236,14 @@ export const InvoiceForm: React.FC = () => {
             <button
               onClick={() => fileInputRef.current?.click()}
               disabled={isScanning}
-              className="flex items-center gap-2 px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm transition-colors disabled:opacity-50"
+              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-xl text-sm font-semibold transition-all disabled:opacity-50 shadow-md hover:shadow-lg"
             >
               {isScanning ? <Loader2 className="animate-spin" size={16} /> : <Sparkles size={16} />}
               AI Scan Receipt
             </button>
             <button
               onClick={() => addItem()}
-              className="flex items-center gap-2 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white rounded-xl text-sm font-semibold transition-all shadow-md hover:shadow-lg"
             >
               <Plus size={16} /> Add Item
             </button>
@@ -298,8 +298,8 @@ export const InvoiceForm: React.FC = () => {
         </div>
       </div>
       
-      <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-         <h2 className="text-lg font-semibold text-gray-800 mb-2">Notes & Signature</h2>
+      <div className="bg-white p-6 rounded-2xl shadow-md border border-gray-200/60 hover:shadow-lg transition-shadow">
+         <h2 className="text-lg font-bold text-gray-800 mb-2 bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent">Notes & Signature</h2>
          <div className="space-y-4">
             <textarea
                value={currentInvoice.notes}
