@@ -53,7 +53,7 @@ export const useInvoiceStore = create<InvoiceState>((set, get) => ({
       if (firebaseUser) {
         // Simple Admin Logic: If email contains 'admin', treat as admin
         const isAdmin = firebaseUser.email?.includes('admin') || false;
-        
+
         const userProfile: UserProfile = {
           uid: firebaseUser.uid,
           email: firebaseUser.email,
@@ -61,10 +61,10 @@ export const useInvoiceStore = create<InvoiceState>((set, get) => ({
         };
 
         set({ user: userProfile });
-        
+
         // Start Listening to Firestore
         set({ isLoadingHistory: true });
-        
+
         let q;
         if (isAdmin) {
           // Admin sees ALL invoices
@@ -72,7 +72,7 @@ export const useInvoiceStore = create<InvoiceState>((set, get) => ({
         } else {
           // Regular user sees only THEIR invoices
           q = query(
-            collection(db, 'invoices'), 
+            collection(db, 'invoices'),
             where('userId', '==', firebaseUser.uid)
           );
         }
@@ -97,7 +97,28 @@ export const useInvoiceStore = create<InvoiceState>((set, get) => ({
         });
 
       } else {
-        set({ user: null, history: [], isLoadingHistory: false });
+        // Guest Mode: Load invoices from localStorage
+        const loadLocalInvoices = () => {
+          try {
+            const saved = localStorage.getItem('guest_invoices');
+            if (saved) {
+              const loadedInvoices: Invoice[] = JSON.parse(saved);
+              // Backwards compatibility: Add useStatus if missing
+              loadedInvoices.forEach(invoice => {
+                if (invoice.settings.useStatus === undefined) {
+                  invoice.settings.useStatus = true;
+                }
+              });
+              loadedInvoices.sort((a, b) => b.createdAt - a.createdAt);
+              set({ history: loadedInvoices });
+            }
+          } catch (error) {
+            console.error('Error loading guest invoices:', error);
+          }
+        };
+
+        loadLocalInvoices();
+        set({ user: null, isLoadingHistory: false });
       }
     });
   },
@@ -168,32 +189,49 @@ export const useInvoiceStore = create<InvoiceState>((set, get) => ({
   // --- Firestore Actions ---
 
   saveInvoice: async () => {
-    const { currentInvoice, user } = get();
-    
-    if (!user) {
-      alert("Please login to save invoices.");
-      return;
-    }
+    const { currentInvoice, user, history } = get();
 
     try {
-      // Ensure userId is set to the creator (or current user if editing)
-      // If admin edits, we keep original owner, or if new, admin becomes owner
       const invoiceToSave = {
         ...currentInvoice,
-        userId: currentInvoice.userId || user.uid, 
+        userId: currentInvoice.userId || user?.uid || 'guest',
         createdAt: currentInvoice.createdAt || Date.now()
       };
 
-      // Save to Firestore
-      await setDoc(doc(db, "invoices", invoiceToSave.id), invoiceToSave);
-      
-      // Update local state currentInvoice to match saved (in case of new ID/Timestamp)
-      set({ currentInvoice: invoiceToSave });
-      
-      // Note: We don't need to manually update 'history' array here 
-      // because the onSnapshot listener in initializeAuth will handle it automatically!
-      
-      alert("Invoice Saved to Cloud!");
+      if (user) {
+        // Authenticated Mode: Save to Firebase
+        await setDoc(doc(db, "invoices", invoiceToSave.id), invoiceToSave);
+
+        // Update local state currentInvoice to match saved
+        set({ currentInvoice: invoiceToSave });
+
+        // Note: onSnapshot listener will handle history update automatically
+        alert("Invoice Saved to Cloud!");
+      } else {
+        // Guest Mode: Save to localStorage
+        const existingIndex = history.findIndex(inv => inv.id === invoiceToSave.id);
+        let updatedHistory: Invoice[];
+
+        if (existingIndex >= 0) {
+          // Update existing invoice
+          updatedHistory = [...history];
+          updatedHistory[existingIndex] = invoiceToSave;
+        } else {
+          // Add new invoice
+          updatedHistory = [invoiceToSave, ...history];
+        }
+
+        // Sort by creation date
+        updatedHistory.sort((a, b) => b.createdAt - a.createdAt);
+
+        // Save to localStorage
+        localStorage.setItem('guest_invoices', JSON.stringify(updatedHistory));
+
+        // Update state
+        set({ currentInvoice: invoiceToSave, history: updatedHistory });
+
+        alert("Invoice Saved Locally!");
+      }
     } catch (error) {
       console.error("Error saving invoice:", error);
       alert("Failed to save invoice.");
@@ -206,13 +244,20 @@ export const useInvoiceStore = create<InvoiceState>((set, get) => ({
   }),
 
   deleteInvoice: async (id) => {
-    const { user } = get();
-    if (!user) return;
+    const { user, history } = get();
 
     if (confirm("Are you sure you want to delete this invoice?")) {
       try {
-        await deleteDoc(doc(db, "invoices", id));
-        // Listener handles UI update
+        if (user) {
+          // Authenticated Mode: Delete from Firebase
+          await deleteDoc(doc(db, "invoices", id));
+          // Listener handles UI update automatically
+        } else {
+          // Guest Mode: Delete from localStorage
+          const updatedHistory = history.filter(inv => inv.id !== id);
+          localStorage.setItem('guest_invoices', JSON.stringify(updatedHistory));
+          set({ history: updatedHistory });
+        }
       } catch (error) {
         console.error("Error deleting:", error);
         alert("Failed to delete.");
