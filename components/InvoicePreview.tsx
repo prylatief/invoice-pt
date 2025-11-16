@@ -67,13 +67,13 @@ export const InvoicePreview: React.FC<Props> = ({ id }) => {
             style={{ padding: '0' }}
         >
             {/* Top Gradient Bar */}
-            <div className="h-6 w-full relative overflow-hidden" style={brandStyle}>
+            <div className="h-4 w-full relative overflow-hidden" style={brandStyle}>
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
             </div>
 
-            <div className="p-8 flex flex-col h-full flex-1">
+            <div className="p-6 flex flex-col h-full flex-1">
                 {/* Header */}
-                <div className="flex justify-between items-start mb-6">
+                <div className="flex justify-between items-start mb-4">
                     <div className="flex flex-col max-w-[50%]">
                         {sender.logo ? (
                             <img 
@@ -93,8 +93,8 @@ export const InvoicePreview: React.FC<Props> = ({ id }) => {
                     </div>
 
                     <div className="text-right">
-                        <h1 className="text-6xl font-extrabold tracking-tight mb-3 bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent drop-shadow-sm">INVOICE</h1>
-                        <p className="text-xl font-bold text-gray-800 mb-6 tracking-wide">#{invoiceNumber}</p>
+                        <h1 className="text-4xl font-extrabold tracking-tight mb-2 bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent drop-shadow-sm">INVOICE</h1>
+                        <p className="text-lg font-bold text-gray-800 mb-4 tracking-wide">#{invoiceNumber}</p>
                         
                         <div className="space-y-1">
                             <div className="flex justify-end gap-6">
@@ -108,8 +108,8 @@ export const InvoicePreview: React.FC<Props> = ({ id }) => {
                         </div>
 
                         {/* Status Badge */}
-                        <div className="mt-6 inline-block px-6 py-1.5 border-2 text-sm font-bold uppercase tracking-widest rounded-md" 
-                            style={{ 
+                        <div className="mt-4 inline-block px-6 py-1.5 border-2 text-sm font-bold uppercase tracking-widest rounded-md"
+                            style={{
                                 borderColor: status === 'PAID' ? '#22c55e' : status === 'UNPAID' ? '#ef4444' : '#9ca3af',
                                 color: status === 'PAID' ? '#22c55e' : status === 'UNPAID' ? '#ef4444' : '#9ca3af'
                             }}
@@ -120,7 +120,7 @@ export const InvoicePreview: React.FC<Props> = ({ id }) => {
                 </div>
 
                 {/* Bill To */}
-                <div className="mb-6 p-5 bg-gradient-to-br from-gray-50 to-gray-100/50 rounded-2xl border-2 border-gray-200/60 shadow-sm break-inside-avoid relative overflow-hidden">
+                <div className="mb-4 p-4 bg-gradient-to-br from-gray-50 to-gray-100/50 rounded-2xl border-2 border-gray-200/60 shadow-sm break-inside-avoid relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-cyan-100/40 to-blue-100/40 rounded-full blur-3xl"></div>
                     <span className="text-xs font-bold text-cyan-600 uppercase tracking-wider mb-2 block relative z-10">Bill To</span>
                     <h2 className="text-xl font-bold text-gray-900 mb-1 relative z-10">{receiver.name || "Client Name"}</h2>
@@ -129,25 +129,25 @@ export const InvoicePreview: React.FC<Props> = ({ id }) => {
                 </div>
 
                 {/* Table */}
-                <div className="flex-1 mb-5">
+                <div className="flex-1 mb-3">
                     <table className="w-full border-collapse rounded-xl overflow-hidden shadow-sm">
                         <thead>
                             <tr className="bg-gradient-to-r text-white shadow-md" style={{ backgroundImage: `linear-gradient(135deg, ${settings.brandColor}, ${settings.brandColor}dd)` }}>
-                                <th className="py-3 px-4 text-left text-xs uppercase font-bold tracking-wider">Description</th>
-                                <th className="py-3 px-4 text-center text-xs uppercase font-bold tracking-wider w-24">Qty</th>
-                                <th className="py-3 px-4 text-right text-xs uppercase font-bold tracking-wider w-32">Price</th>
-                                <th className="py-3 px-4 text-right text-xs uppercase font-bold tracking-wider w-32">Total</th>
+                                <th className="py-2 px-4 text-left text-xs uppercase font-bold tracking-wider">Description</th>
+                                <th className="py-2 px-4 text-center text-xs uppercase font-bold tracking-wider w-24">Qty</th>
+                                <th className="py-2 px-4 text-right text-xs uppercase font-bold tracking-wider w-32">Price</th>
+                                <th className="py-2 px-4 text-right text-xs uppercase font-bold tracking-wider w-32">Total</th>
                             </tr>
                         </thead>
                         <tbody className="text-gray-700">
                             {items.map((item, idx) => (
                                 <tr key={item.id} className={`break-inside-avoid transition-colors hover:bg-gray-100/50 ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}`}>
-                                    <td className="py-3 px-4 border-b border-gray-200/60 font-medium">{item.description}</td>
-                                    <td className="py-3 px-4 text-center border-b border-gray-200/60">{item.quantity}</td>
-                                    <td className="py-3 px-4 text-right border-b border-gray-200/60 text-gray-600">
+                                    <td className="py-2 px-4 border-b border-gray-200/60 font-medium">{item.description}</td>
+                                    <td className="py-2 px-4 text-center border-b border-gray-200/60">{item.quantity}</td>
+                                    <td className="py-2 px-4 text-right border-b border-gray-200/60 text-gray-600">
                                         {formatCurrency(item.price, settings.currency)}
                                     </td>
-                                    <td className="py-3 px-4 text-right border-b border-gray-200/60 font-bold text-gray-900">
+                                    <td className="py-2 px-4 text-right border-b border-gray-200/60 font-bold text-gray-900">
                                         {formatCurrency(item.price * item.quantity, settings.currency)}
                                     </td>
                                 </tr>
@@ -157,22 +157,22 @@ export const InvoicePreview: React.FC<Props> = ({ id }) => {
                 </div>
 
                 {/* Summary */}
-                <div className="flex justify-end mb-6 break-inside-avoid">
-                    <div className="w-2/3 md:w-1/2 lg:w-5/12 space-y-2 bg-gray-50/50 p-5 rounded-2xl border border-gray-200/60 shadow-sm">
-                        <div className="flex justify-between py-2 border-b border-gray-200 text-gray-600">
+                <div className="flex justify-end mb-4 break-inside-avoid">
+                    <div className="w-2/3 md:w-1/2 lg:w-5/12 space-y-1 bg-gray-50/50 p-4 rounded-2xl border border-gray-200/60 shadow-sm">
+                        <div className="flex justify-between py-1.5 border-b border-gray-200 text-gray-600">
                             <span className="font-medium">Subtotal</span>
                             <span className="font-semibold text-gray-900">{formatCurrency(subtotal, settings.currency)}</span>
                         </div>
-                        <div className="flex justify-between py-2 border-b border-gray-200 text-gray-600">
+                        <div className="flex justify-between py-1.5 border-b border-gray-200 text-gray-600">
                             <span className="font-medium">Tax ({settings.taxRate}%)</span>
                             <span className="font-semibold text-gray-900">{formatCurrency(taxAmount, settings.currency)}</span>
                         </div>
-                        <div className="flex justify-between items-center py-3 bg-gradient-to-r from-cyan-50 to-blue-50 -mx-5 px-5 rounded-xl mt-1">
-                            <span className="text-xl font-bold text-gray-800">Total</span>
-                            <span className="text-3xl font-extrabold text-cyan-700">{formatCurrency(total, settings.currency)}</span>
+                        <div className="flex justify-between items-center py-2 bg-gradient-to-r from-cyan-50 to-blue-50 -mx-4 px-4 rounded-xl mt-1">
+                            <span className="text-lg font-bold text-gray-800">Total</span>
+                            <span className="text-xl font-extrabold text-cyan-700">{formatCurrency(total, settings.currency)}</span>
                         </div>
                         {settings.currency === 'IDR' && (
-                            <div className="text-right text-sm text-gray-500 italic mt-3 capitalize font-medium border-t border-gray-200 pt-3">
+                            <div className="text-right text-sm text-gray-500 italic mt-2 capitalize font-medium border-t border-gray-200 pt-2">
                                 {terbilang(total)} Rupiah
                             </div>
                         )}
@@ -181,10 +181,10 @@ export const InvoicePreview: React.FC<Props> = ({ id }) => {
 
                 {/* Footer & Notes */}
                 <div className="mt-auto break-inside-avoid">
-                    <div className="flex justify-between items-end gap-8 pb-5">
+                    <div className="flex justify-between items-end gap-8 pb-3">
                         <div className="flex-1">
-                            <h3 className="text-xs font-bold text-cyan-600 uppercase mb-3 tracking-wider">Notes & Payment Info</h3>
-                            <div className="bg-gradient-to-r from-gray-50 to-transparent border-l-4 pl-5 py-3 rounded-r-lg" style={{ borderColor: settings.brandColor }}>
+                            <h3 className="text-xs font-bold text-cyan-600 uppercase mb-2 tracking-wider">Notes & Payment Info</h3>
+                            <div className="bg-gradient-to-r from-gray-50 to-transparent border-l-4 pl-4 py-2 rounded-r-lg" style={{ borderColor: settings.brandColor }}>
                                 <p className="text-gray-700 text-sm whitespace-pre-wrap leading-relaxed">
                                     {notes}
                                 </p>
@@ -192,7 +192,7 @@ export const InvoicePreview: React.FC<Props> = ({ id }) => {
                         </div>
                         <div className="text-center min-w-[200px]">
                             {/* Space for physical signature */}
-                            <div className="h-16 mb-1"></div>
+                            <div className="h-12 mb-1"></div>
                             
                             {/* Subtle decorative border for signature */}
                             <div className="border-t-2 opacity-50" style={{ borderColor: settings.brandColor }}></div>
@@ -207,7 +207,7 @@ export const InvoicePreview: React.FC<Props> = ({ id }) => {
             </div>
 
             {/* Decorative Bottom Bar with Watermark */}
-            <div className="h-10 w-full flex items-center justify-between px-8 relative overflow-hidden" style={brandStyle}>
+            <div className="h-8 w-full flex items-center justify-between px-6 relative overflow-hidden" style={brandStyle}>
                  <div className="absolute inset-0 bg-gradient-to-r from-black/10 via-transparent to-black/10"></div>
                  <span className="text-xs text-white/90 tracking-wide font-medium relative z-10">{sender.website || 'www.latiefinvoice.com'}</span>
                  <div className="flex items-center gap-2 relative z-10">
