@@ -3,16 +3,17 @@ import { Invoice, InvoiceItem, UserProfile } from './types';
 import { INITIAL_INVOICE } from './constants';
 import { v4 as uuidv4 } from 'uuid';
 import { db, auth } from './services/firebase';
-import { 
-  collection, 
-  doc, 
-  setDoc, 
-  deleteDoc, 
-  onSnapshot, 
-  query, 
-  where,
-  orderBy
-} from 'firebase/firestore';
+import {
+  ref,
+  set,
+  push,
+  remove,
+  onValue,
+  off,
+  query,
+  orderByChild,
+  equalTo
+} from 'firebase/database';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 
 interface InvoiceState {
@@ -82,70 +83,77 @@ export const useInvoiceStore = create<InvoiceState>((set, get) => ({
 
         set({ user: userProfile });
 
-        // Start Listening to Firestore
+        // Start Listening to Realtime Database
         set({ isLoadingHistory: true });
 
-        let q;
+        let dbRef;
         if (isAdmin) {
-          // Admin sees ALL invoices
-          q = query(collection(db, 'invoices'), orderBy('createdAt', 'desc'));
+          // Admin sees ALL invoices from all users
+          dbRef = ref(db, 'invoices');
         } else {
           // Regular user sees only THEIR invoices
-          q = query(
-            collection(db, 'invoices'),
-            where('userId', '==', firebaseUser.uid)
-          );
+          // Path: /invoices/<user_uid>/
+          dbRef = ref(db, `invoices/${firebaseUser.uid}`);
         }
 
-        // Create Firestore listener and store unsubscribe function
-        const unsubSnapshot = onSnapshot(q, (snapshot) => {
+        // Create Realtime Database listener
+        const handleSnapshot = (snapshot: any) => {
           const loadedInvoices: Invoice[] = [];
-          snapshot.forEach((doc) => {
-            const invoice = doc.data() as Invoice;
-            // Backwards compatibility: Add useStatus if missing
-            if (invoice.settings.useStatus === undefined) {
-              invoice.settings.useStatus = true;
-            }
-            loadedInvoices.push(invoice);
-          });
 
-          // Sort manually if composite index is missing for 'where' + 'orderBy'
-          if (!isAdmin) {
-             loadedInvoices.sort((a, b) => b.createdAt - a.createdAt);
-          }
+          if (snapshot.exists()) {
+            const data = snapshot.val();
 
-          set({ history: loadedInvoices, isLoadingHistory: false });
-        }, (error) => {
-          console.error('Error listening to invoices:', error);
-          set({ isLoadingHistory: false });
-        });
-
-        // Store the unsubscribe function
-        set({ _unsubscribeSnapshot: unsubSnapshot });
-
-      } else {
-        // Guest Mode: Load invoices from localStorage
-        const loadLocalInvoices = () => {
-          try {
-            const saved = localStorage.getItem('guest_invoices');
-            if (saved) {
-              const loadedInvoices: Invoice[] = JSON.parse(saved);
-              // Backwards compatibility: Add useStatus if missing
-              loadedInvoices.forEach(invoice => {
+            if (isAdmin) {
+              // Admin mode: data is nested by userId
+              // Structure: { userId1: { invoiceId1: {...}, invoiceId2: {...} }, userId2: {...} }
+              Object.keys(data).forEach(userId => {
+                const userInvoices = data[userId];
+                Object.keys(userInvoices).forEach(invoiceId => {
+                  const invoice = userInvoices[invoiceId] as Invoice;
+                  // Backwards compatibility: Add useStatus if missing
+                  if (invoice.settings.useStatus === undefined) {
+                    invoice.settings.useStatus = true;
+                  }
+                  loadedInvoices.push(invoice);
+                });
+              });
+            } else {
+              // User mode: data is directly invoices
+              // Structure: { invoiceId1: {...}, invoiceId2: {...} }
+              Object.keys(data).forEach(invoiceId => {
+                const invoice = data[invoiceId] as Invoice;
+                // Backwards compatibility: Add useStatus if missing
                 if (invoice.settings.useStatus === undefined) {
                   invoice.settings.useStatus = true;
                 }
+                loadedInvoices.push(invoice);
               });
-              loadedInvoices.sort((a, b) => b.createdAt - a.createdAt);
-              set({ history: loadedInvoices });
             }
-          } catch (error) {
-            console.error('Error loading guest invoices:', error);
           }
+
+          // Sort by createdAt descending
+          loadedInvoices.sort((a, b) => b.createdAt - a.createdAt);
+
+          set({ history: loadedInvoices, isLoadingHistory: false });
         };
 
-        loadLocalInvoices();
-        set({ user: null, isLoadingHistory: false });
+        const handleError = (error: any) => {
+          console.error('Error listening to invoices:', error);
+          set({ isLoadingHistory: false });
+        };
+
+        // Attach listener
+        onValue(dbRef, handleSnapshot, handleError);
+
+        // Store the unsubscribe function
+        const unsubSnapshot = () => {
+          off(dbRef);
+        };
+        set({ _unsubscribeSnapshot: unsubSnapshot });
+
+      } else {
+        // Guest Mode: TIDAK menggunakan localStorage, hanya tampilkan pesan
+        set({ user: null, history: [], isLoadingHistory: false });
       }
     });
 
@@ -226,19 +234,24 @@ export const useInvoiceStore = create<InvoiceState>((set, get) => ({
     }
   })),
 
-  // --- Firestore Actions ---
+  // --- Realtime Database Actions ---
 
   saveInvoice: async (forceNew = false) => {
-    const { currentInvoice, user, history, isEditingExisting } = get();
+    const { currentInvoice, user, isEditingExisting } = get();
+
+    if (!user) {
+      alert("Please login to save invoices. Guest mode is no longer supported.");
+      return;
+    }
 
     try {
       // Determine if this should create a new invoice entry
       const shouldCreateNew = forceNew || !isEditingExisting;
 
-      // If creating new, generate new ID
+      // Prepare invoice data
       let invoiceToSave = {
         ...currentInvoice,
-        userId: user?.uid || currentInvoice.userId || 'guest',
+        userId: user.uid,
         createdAt: currentInvoice.createdAt || Date.now()
       };
 
@@ -252,55 +265,46 @@ export const useInvoiceStore = create<InvoiceState>((set, get) => ({
         };
       }
 
-      if (user) {
-        // Authenticated Mode: Save to Firebase
-        await setDoc(doc(db, "invoices", invoiceToSave.id), invoiceToSave);
+      // Path: /invoices/<user_uid>/<invoice_id>
+      const invoicePath = `invoices/${user.uid}`;
 
-        // After successful save, reset to create new invoice (if it was a new invoice)
-        if (!isEditingExisting || forceNew) {
+      if (shouldCreateNew && !isEditingExisting) {
+        // New invoice: use push() to generate unique ID
+        const newInvoiceRef = push(ref(db, invoicePath));
+        const pushId = newInvoiceRef.key;
+
+        if (!pushId) {
+          throw new Error('Failed to generate invoice ID');
+        }
+
+        invoiceToSave.id = pushId;
+
+        // Save to database
+        await set(newInvoiceRef, invoiceToSave);
+
+        // Reset form for new invoice
+        get().resetInvoice();
+        alert("Invoice Saved to Cloud! Ready to create a new invoice.");
+      } else {
+        // Update existing invoice: use set() with specific path
+        const invoiceRef = ref(db, `${invoicePath}/${invoiceToSave.id}`);
+        await set(invoiceRef, invoiceToSave);
+
+        if (forceNew) {
+          // Saved as copy
           get().resetInvoice();
-          alert("Invoice Saved to Cloud! Ready to create a new invoice.");
+          alert("Invoice Saved as Copy!");
         } else {
-          // Update local state currentInvoice to match saved
+          // Updated existing
           set({ currentInvoice: invoiceToSave });
           alert("Invoice Updated!");
         }
-
-        // Note: onSnapshot listener will handle history update automatically
-      } else {
-        // Guest Mode: Save to localStorage
-        const existingIndex = history.findIndex(inv => inv.id === invoiceToSave.id);
-        let updatedHistory: Invoice[];
-
-        if (existingIndex >= 0 && !shouldCreateNew) {
-          // Update existing invoice
-          updatedHistory = [...history];
-          updatedHistory[existingIndex] = invoiceToSave;
-        } else {
-          // Add new invoice (or save as copy)
-          updatedHistory = [invoiceToSave, ...history];
-        }
-
-        // Sort by creation date
-        updatedHistory.sort((a, b) => b.createdAt - a.createdAt);
-
-        // Save to localStorage
-        localStorage.setItem('guest_invoices', JSON.stringify(updatedHistory));
-
-        // After successful save, reset to create new invoice (if it was a new invoice)
-        if (!isEditingExisting || forceNew) {
-          get().resetInvoice();
-          set({ history: updatedHistory });
-          alert("Invoice Saved Locally! Ready to create a new invoice.");
-        } else {
-          // Update state
-          set({ currentInvoice: invoiceToSave, history: updatedHistory });
-          alert("Invoice Updated!");
-        }
       }
+
+      // Note: onValue listener will handle history update automatically
     } catch (error) {
       console.error("Error saving invoice:", error);
-      alert("Failed to save invoice.");
+      alert("Failed to save invoice. Error: " + (error as Error).message);
     }
   },
 
@@ -310,23 +314,25 @@ export const useInvoiceStore = create<InvoiceState>((set, get) => ({
   }),
 
   deleteInvoice: async (id) => {
-    const { user, history } = get();
+    const { user } = get();
+
+    if (!user) {
+      alert("Please login to delete invoices.");
+      return;
+    }
 
     if (confirm("Are you sure you want to delete this invoice?")) {
       try {
-        if (user) {
-          // Authenticated Mode: Delete from Firebase
-          await deleteDoc(doc(db, "invoices", id));
-          // Listener handles UI update automatically
-        } else {
-          // Guest Mode: Delete from localStorage
-          const updatedHistory = history.filter(inv => inv.id !== id);
-          localStorage.setItem('guest_invoices', JSON.stringify(updatedHistory));
-          set({ history: updatedHistory });
-        }
+        // Delete from Realtime Database
+        // Path: /invoices/<user_uid>/<invoice_id>
+        const invoiceRef = ref(db, `invoices/${user.uid}/${id}`);
+        await remove(invoiceRef);
+
+        // Listener handles UI update automatically
+        alert("Invoice deleted successfully!");
       } catch (error) {
         console.error("Error deleting:", error);
-        alert("Failed to delete.");
+        alert("Failed to delete invoice. Error: " + (error as Error).message);
       }
     }
   },
