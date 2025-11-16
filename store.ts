@@ -288,24 +288,10 @@ export const useInvoiceStore = create<InvoiceState>((set, get) => ({
         // Save to database
         await set(newInvoiceRef, invoiceToSave);
 
-        // Reset form for new invoice
-        set((state) => ({
-          currentInvoice: {
-            ...INITIAL_INVOICE,
-            id: uuidv4(),
-            userId: state.user?.uid || '',
-            invoiceNumber: `INV-${new Date().getFullYear()}-${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`
-          },
-          isEditingExisting: false
-        }));
         alert("Invoice Saved to Cloud! Ready to create a new invoice.");
-      } else {
-        // Update existing invoice: use set() with specific path
-        const invoiceRef = ref(db, `${invoicePath}/${invoiceToSave.id}`);
-        await set(invoiceRef, invoiceToSave);
 
-        if (forceNew) {
-          // Saved as copy
+        // Reset form for new invoice - use setTimeout to ensure clean state update after alert
+        setTimeout(() => {
           set((state) => ({
             currentInvoice: {
               ...INITIAL_INVOICE,
@@ -315,11 +301,34 @@ export const useInvoiceStore = create<InvoiceState>((set, get) => ({
             },
             isEditingExisting: false
           }));
+        }, 100);
+      } else {
+        // Update existing invoice: use set() with specific path
+        const invoiceRef = ref(db, `${invoicePath}/${invoiceToSave.id}`);
+        await set(invoiceRef, invoiceToSave);
+
+        if (forceNew) {
+          // Saved as copy
           alert("Invoice Saved as Copy!");
+
+          setTimeout(() => {
+            set((state) => ({
+              currentInvoice: {
+                ...INITIAL_INVOICE,
+                id: uuidv4(),
+                userId: state.user?.uid || '',
+                invoiceNumber: `INV-${new Date().getFullYear()}-${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`
+              },
+              isEditingExisting: false
+            }));
+          }, 100);
         } else {
           // Updated existing
-          set({ currentInvoice: invoiceToSave });
           alert("Invoice Updated!");
+
+          setTimeout(() => {
+            set({ currentInvoice: invoiceToSave });
+          }, 100);
         }
       }
 
