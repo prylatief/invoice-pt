@@ -23,10 +23,12 @@ dist-ssr
 *.sln
 *.sw?
 
-# Firebase Admin Service Account Keys
+# Firebase Admin Service Account Keys (but allow example files)
 server/serviceAccountKey.json
 serviceAccountKey.json
-**/serviceAccountKey*.json
+**/serviceAccountKey.json
+# Exclude example files from the ignore pattern above
+!**/serviceAccountKey.example.json
 
 # Environment variables
 .env
