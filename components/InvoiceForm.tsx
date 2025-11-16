@@ -2,11 +2,12 @@ import React, { useRef, useState } from 'react';
 import { useInvoiceStore } from '../store';
 import { fileToBase64 } from '../utils';
 import { scanInvoiceImage } from '../services/geminiService';
-import { Upload, Plus, Trash2, Sparkles, Loader2, Palette, Save } from 'lucide-react';
+import { Upload, Plus, Trash2, Sparkles, Loader2, Palette, Save, Copy } from 'lucide-react';
 
 export const InvoiceForm: React.FC = () => {
   const {
     currentInvoice,
+    isEditingExisting,
     updateSender,
     updateReceiver,
     updateInvoiceDetails,
@@ -117,14 +118,37 @@ export const InvoiceForm: React.FC = () => {
 
       {/* Invoice Details */}
       <div className="bg-white p-6 rounded-2xl shadow-md border border-gray-200/60 hover:shadow-lg transition-shadow">
-        <div className="flex justify-between items-center mb-4">
-             <h2 className="text-lg font-bold text-gray-800 bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent">Invoice Details</h2>
-             <button
-                onClick={saveInvoice}
-                className="flex items-center gap-2 px-5 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl text-sm font-semibold hover:from-green-600 hover:to-emerald-700 transition-all shadow-md hover:shadow-lg"
-             >
-                <Save size={16} /> Save
-             </button>
+        <div className="flex justify-between items-center mb-4 flex-wrap gap-3">
+             <div className="flex items-center gap-3">
+                <h2 className="text-lg font-bold text-gray-800 bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent">Invoice Details</h2>
+                {isEditingExisting && (
+                   <span className="px-3 py-1 bg-amber-100 text-amber-700 text-xs font-bold rounded-full">
+                      EDITING
+                   </span>
+                )}
+                {!isEditingExisting && (
+                   <span className="px-3 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full">
+                      NEW
+                   </span>
+                )}
+             </div>
+             <div className="flex gap-2">
+                <button
+                   onClick={() => saveInvoice(false)}
+                   className="flex items-center gap-2 px-5 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl text-sm font-semibold hover:from-green-600 hover:to-emerald-700 transition-all shadow-md hover:shadow-lg"
+                >
+                   <Save size={16} /> {isEditingExisting ? 'Update' : 'Save'}
+                </button>
+                {isEditingExisting && (
+                   <button
+                      onClick={() => saveInvoice(true)}
+                      className="flex items-center gap-2 px-5 py-2 bg-gradient-to-r from-blue-500 to-cyan-600 text-white rounded-xl text-sm font-semibold hover:from-blue-600 hover:to-cyan-700 transition-all shadow-md hover:shadow-lg"
+                      title="Save as a new copy"
+                   >
+                      <Copy size={16} /> Save as Copy
+                   </button>
+                )}
+             </div>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

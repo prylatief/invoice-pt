@@ -20,6 +20,7 @@ interface InvoiceState {
   currentInvoice: Invoice;
   history: Invoice[];
   isLoadingHistory: boolean;
+  isEditingExisting: boolean; // Track if editing existing invoice
 
   // Internal: Listener cleanup functions
   _unsubscribeAuth: (() => void) | null;
@@ -39,7 +40,7 @@ interface InvoiceState {
   removeItem: (id: string) => void;
   setItems: (items: InvoiceItem[]) => void;
 
-  saveInvoice: () => Promise<void>;
+  saveInvoice: (forceNew?: boolean) => Promise<void>;
   loadInvoice: (id: string) => void;
   deleteInvoice: (id: string) => Promise<void>;
   resetInvoice: () => void;
@@ -50,6 +51,7 @@ export const useInvoiceStore = create<InvoiceState>((set, get) => ({
   currentInvoice: { ...INITIAL_INVOICE, id: uuidv4(), userId: '' },
   history: [],
   isLoadingHistory: false,
+  isEditingExisting: false,
   _unsubscribeAuth: null,
   _unsubscribeSnapshot: null,
 
@@ -226,37 +228,56 @@ export const useInvoiceStore = create<InvoiceState>((set, get) => ({
 
   // --- Firestore Actions ---
 
-  saveInvoice: async () => {
-    const { currentInvoice, user, history } = get();
+  saveInvoice: async (forceNew = false) => {
+    const { currentInvoice, user, history, isEditingExisting } = get();
 
     try {
-      // Ensure userId is always set correctly for authenticated users
-      const invoiceToSave = {
+      // Determine if this should create a new invoice entry
+      const shouldCreateNew = forceNew || !isEditingExisting;
+
+      // If creating new, generate new ID
+      let invoiceToSave = {
         ...currentInvoice,
         userId: user?.uid || currentInvoice.userId || 'guest',
         createdAt: currentInvoice.createdAt || Date.now()
       };
 
+      if (shouldCreateNew && isEditingExisting) {
+        // User wants to save as copy - generate new ID
+        invoiceToSave = {
+          ...invoiceToSave,
+          id: uuidv4(),
+          createdAt: Date.now(),
+          invoiceNumber: `INV-${new Date().getFullYear()}-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`
+        };
+      }
+
       if (user) {
         // Authenticated Mode: Save to Firebase
         await setDoc(doc(db, "invoices", invoiceToSave.id), invoiceToSave);
 
-        // Update local state currentInvoice to match saved
-        set({ currentInvoice: invoiceToSave });
+        // After successful save, reset to create new invoice (if it was a new invoice)
+        if (!isEditingExisting || forceNew) {
+          get().resetInvoice();
+          alert("Invoice Saved to Cloud! Ready to create a new invoice.");
+        } else {
+          // Update local state currentInvoice to match saved
+          set({ currentInvoice: invoiceToSave });
+          alert("Invoice Updated!");
+        }
 
         // Note: onSnapshot listener will handle history update automatically
-        alert("Invoice Saved to Cloud!");
       } else {
         // Guest Mode: Save to localStorage
         const existingIndex = history.findIndex(inv => inv.id === invoiceToSave.id);
         let updatedHistory: Invoice[];
 
-        if (existingIndex >= 0) {
+        if (existingIndex >= 0 && !shouldCreateNew) {
           // Update existing invoice
           updatedHistory = [...history];
           updatedHistory[existingIndex] = invoiceToSave;
         } else {
-          // Add new invoice
+          // Add new invoice (or save as copy)
           updatedHistory = [invoiceToSave, ...history];
         }
 
@@ -266,10 +287,16 @@ export const useInvoiceStore = create<InvoiceState>((set, get) => ({
         // Save to localStorage
         localStorage.setItem('guest_invoices', JSON.stringify(updatedHistory));
 
-        // Update state
-        set({ currentInvoice: invoiceToSave, history: updatedHistory });
-
-        alert("Invoice Saved Locally!");
+        // After successful save, reset to create new invoice (if it was a new invoice)
+        if (!isEditingExisting || forceNew) {
+          get().resetInvoice();
+          set({ history: updatedHistory });
+          alert("Invoice Saved Locally! Ready to create a new invoice.");
+        } else {
+          // Update state
+          set({ currentInvoice: invoiceToSave, history: updatedHistory });
+          alert("Invoice Updated!");
+        }
       }
     } catch (error) {
       console.error("Error saving invoice:", error);
@@ -279,7 +306,7 @@ export const useInvoiceStore = create<InvoiceState>((set, get) => ({
 
   loadInvoice: (id) => set((state) => {
     const invoice = state.history.find(i => i.id === id);
-    return invoice ? { currentInvoice: invoice } : {};
+    return invoice ? { currentInvoice: invoice, isEditingExisting: true } : {};
   }),
 
   deleteInvoice: async (id) => {
@@ -305,11 +332,12 @@ export const useInvoiceStore = create<InvoiceState>((set, get) => ({
   },
 
   resetInvoice: () => set((state) => ({
-    currentInvoice: { 
-      ...INITIAL_INVOICE, 
-      id: uuidv4(), 
+    currentInvoice: {
+      ...INITIAL_INVOICE,
+      id: uuidv4(),
       userId: state.user?.uid || '',
-      invoiceNumber: `INV-${new Date().getFullYear()}-${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}` 
-    }
+      invoiceNumber: `INV-${new Date().getFullYear()}-${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`
+    },
+    isEditingExisting: false
   }))
 }));
