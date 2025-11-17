@@ -8,6 +8,7 @@ export const InvoiceForm: React.FC = () => {
   const {
     currentInvoice,
     isEditingExisting,
+    isSaving,
     updateSender,
     updateReceiver,
     updateInvoiceDetails,
@@ -135,17 +136,21 @@ export const InvoiceForm: React.FC = () => {
              <div className="flex gap-2">
                 <button
                    onClick={() => saveInvoice(false)}
-                   className="flex items-center gap-2 px-5 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl text-sm font-semibold hover:from-green-600 hover:to-emerald-700 transition-all shadow-md hover:shadow-lg"
+                   disabled={isSaving}
+                   className="flex items-center gap-2 px-5 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl text-sm font-semibold hover:from-green-600 hover:to-emerald-700 transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                   <Save size={16} /> {isEditingExisting ? 'Update' : 'Save'}
+                   {isSaving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+                   {isSaving ? 'Saving...' : (isEditingExisting ? 'Update' : 'Save')}
                 </button>
                 {isEditingExisting && (
                    <button
                       onClick={() => saveInvoice(true)}
-                      className="flex items-center gap-2 px-5 py-2 bg-gradient-to-r from-blue-500 to-cyan-600 text-white rounded-xl text-sm font-semibold hover:from-blue-600 hover:to-cyan-700 transition-all shadow-md hover:shadow-lg"
+                      disabled={isSaving}
+                      className="flex items-center gap-2 px-5 py-2 bg-gradient-to-r from-blue-500 to-cyan-600 text-white rounded-xl text-sm font-semibold hover:from-blue-600 hover:to-cyan-700 transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
                       title="Save as a new copy"
                    >
-                      <Copy size={16} /> Save as Copy
+                      {isSaving ? <Loader2 size={16} className="animate-spin" /> : <Copy size={16} />}
+                      {isSaving ? 'Saving...' : 'Save as Copy'}
                    </button>
                 )}
              </div>

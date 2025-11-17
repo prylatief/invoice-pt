@@ -22,6 +22,7 @@ interface InvoiceState {
   history: Invoice[];
   isLoadingHistory: boolean;
   isEditingExisting: boolean; // Track if editing existing invoice
+  isSaving: boolean; // Track save operation to prevent race conditions
 
   // Internal: Listener cleanup functions
   _unsubscribeAuth: (() => void) | null;
@@ -53,6 +54,7 @@ export const useInvoiceStore = create<InvoiceState>((set, get) => ({
   history: [],
   isLoadingHistory: false,
   isEditingExisting: false,
+  isSaving: false,
   _unsubscribeAuth: null,
   _unsubscribeSnapshot: null,
 
@@ -250,6 +252,9 @@ export const useInvoiceStore = create<InvoiceState>((set, get) => ({
       return;
     }
 
+    // Set saving state to prevent race conditions
+    set({ isSaving: true });
+
     try {
       // Determine if this should create a new invoice entry
       const shouldCreateNew = forceNew || !isEditingExisting;
@@ -288,11 +293,32 @@ export const useInvoiceStore = create<InvoiceState>((set, get) => ({
         // Save to database
         await set(newInvoiceRef, invoiceToSave);
 
+        // Reset form for new invoice - SYNCHRONOUSLY update state after save
+        // Scroll to top first
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+
+        // Single atomic state update
+        set((state) => ({
+          currentInvoice: {
+            ...INITIAL_INVOICE,
+            id: uuidv4(),
+            userId: state.user?.uid || '',
+            invoiceNumber: `INV-${new Date().getFullYear()}-${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`
+          },
+          isEditingExisting: false,
+          isSaving: false
+        }));
+
+        // Alert AFTER state is updated to prevent blocking
         alert("Invoice Saved to Cloud! Ready to create a new invoice.");
 
-        // Reset form for new invoice - use setTimeout to ensure clean state update after alert
-        setTimeout(() => {
-          // Scroll to top to show the new form
+      } else {
+        // Update existing invoice: use set() with specific path
+        const invoiceRef = ref(db, `${invoicePath}/${invoiceToSave.id}`);
+        await set(invoiceRef, invoiceToSave);
+
+        if (forceNew) {
+          // Saved as copy - reset to new form
           window.scrollTo({ top: 0, behavior: 'smooth' });
 
           set((state) => ({
@@ -302,45 +328,27 @@ export const useInvoiceStore = create<InvoiceState>((set, get) => ({
               userId: state.user?.uid || '',
               invoiceNumber: `INV-${new Date().getFullYear()}-${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`
             },
-            isEditingExisting: false
+            isEditingExisting: false,
+            isSaving: false
           }));
-        }, 150);
-      } else {
-        // Update existing invoice: use set() with specific path
-        const invoiceRef = ref(db, `${invoicePath}/${invoiceToSave.id}`);
-        await set(invoiceRef, invoiceToSave);
 
-        if (forceNew) {
-          // Saved as copy
           alert("Invoice Saved as Copy!");
 
-          setTimeout(() => {
-            // Scroll to top to show the new form
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-
-            set((state) => ({
-              currentInvoice: {
-                ...INITIAL_INVOICE,
-                id: uuidv4(),
-                userId: state.user?.uid || '',
-                invoiceNumber: `INV-${new Date().getFullYear()}-${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`
-              },
-              isEditingExisting: false
-            }));
-          }, 150);
         } else {
-          // Updated existing
-          alert("Invoice Updated!");
+          // Updated existing - keep the saved invoice in view
+          set({
+            currentInvoice: invoiceToSave,
+            isSaving: false
+          });
 
-          setTimeout(() => {
-            set({ currentInvoice: invoiceToSave });
-          }, 150);
+          alert("Invoice Updated!");
         }
       }
 
       // Note: onValue listener will handle history update automatically
     } catch (error) {
       console.error("Error saving invoice:", error);
+      set({ isSaving: false });
       alert("Failed to save invoice. Error: " + (error as Error).message);
     }
   },
